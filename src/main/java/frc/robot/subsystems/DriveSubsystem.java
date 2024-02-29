@@ -16,6 +16,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 //import com.pathplanner.lib.config.ReplanningConfig;
 // ... any other PathPlanner related classes
 
@@ -71,38 +73,55 @@ public class DriveSubsystem  extends SubsystemBase{
         odometry = new DifferentialDriveOdometry(navx.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
         
         odometry.resetPosition(navx.getRotation2d(), wheelPos, new Pose2d());
-        //odometry.resetPosition(new Pose2d(), navx.getRotation2d());
-        // All other subsystem initialization
-        // ...
+        
+    
+        AutoBuilder.configureRamsete(
+                this::getPose, // Robot pose supplier
+                this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+                this::getCurrentSpeeds, // Current ChassisSpeeds supplier
+                this::drive, // Method that will drive the robot given ChassisSpeeds
+                new ReplanningConfig(), // Default path replanning config. See the API for the options here
+                () -> {
+                // Boolean supplier that controls when the path will be mirrored for the red alliance
+                // This will flip the path being followed to the red side of the field.
+                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-        // Configure AutoBuilder last
-        // AutoBuilder.configureRamsete(
-        //         this::getPose, // Robot pose supplier
-        //         this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-        //         this::getCurrentSpeeds, // Current ChassisSpeeds supplier
-        //         this::drive, // Method that will drive the robot given ChassisSpeeds
-        //         new ReplanningConfig(), // Default path replanning config. See the API for the options here
-        //         () -> {
-        //         // Boolean supplier that controls when the path will be mirrored for the red alliance
-        //         // This will flip the path being followed to the red side of the field.
-        //         // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-        //         var alliance = DriverStation.getAlliance();
-        //         if (alliance.isPresent()) {
-        //             return alliance.get() == DriverStation.Alliance.Red;
-        //         }
-        //         return false;
-        //         },
-        //         this // Reference to this subsystem to set requirements
-        // );
+                var alliance = DriverStation.getAlliance();
+                if (alliance.isPresent()) {
+                    return alliance.get() == DriverStation.Alliance.Red;
+                }
+                return false;
+                },
+                this // Reference to this subsystem to set requirements
+        );
     }
     public void resetEncoders(){
         rightEncoder.setPosition(0);
         leftEncoder.setPosition(0);
     }
 
-    public void arcadeDrive(double fwd, double rot){
-        difDrive.arcadeDrive(fwd, rot);
+    public void drive(ChassisSpeeds chassis){
+         // Convert chassis speeds to wheel speeds
+    // var wheelSpeeds = DriveConstants.kDriveKinematics.toWheelSpeeds(chassis);
+
+    // // Calculate feedback voltages
+    // double leftFeedbackVolts = leftPIDController.calculate(leftEncoder.getVelocity(), wheelSpeeds.leftMetersPerSecond);
+    // double rightFeedbackVolts = rightPIDController.calculate(rightEncoder.getVelocity(), wheelSpeeds.rightMetersPerSecond);
+
+    // // Calculate feedforward voltages
+    // double leftFeedforwardVolts = DriveConstants.ksVolts +
+    //     DriveConstants.kvVoltSecondsPerMeter * chassis.vxMetersPerSecond +
+    //     DriveConstants.kaVoltSecondsSquaredPerMeter * chassis.axMetersPerSecond2;
+    // double rightFeedforwardVolts = DriveConstants.ksVolts +
+    //     DriveConstants.kvVoltSecondsPerMeter * chassis.vxMetersPerSecond +
+    //     DriveConstants.kaVoltSecondsSquaredPerMeter * chassis.axMetersPerSecond2;
+
+    // // Add feedforward and feedback voltages together
+    // double leftVolts = leftFeedforwardVolts + leftFeedbackVolts;
+    // double rightVolts = rightFeedforwardVolts + rightFeedbackVolts;
+
+    // Send voltage commands to motors
+   // difDrive.tankDriveVolts(leftVolts, rightVolts);
     }
 
     public double getRightEncoderPosition(){
@@ -127,8 +146,9 @@ public class DriveSubsystem  extends SubsystemBase{
         odometry.resetPosition(navx.getRotation2d(),leftEncoder.getPosition(),rightEncoder.getPosition(),pose);
 
     }
-    public DifferentialDriveWheelSpeeds getCurrentSpeeds(){
-        return new DifferentialDriveWheelSpeeds(getLeftEncoderVelocity(),getRightEncoderVelocity());
+    public ChassisSpeeds getCurrentSpeeds(){
+        return new ChassisSpeeds(navx.getVelocityX(), navx.getVelocityY(), navx.getRate());
+        //return new DifferentialDriveWheelSpeeds(getLeftEncoderVelocity(),getRightEncoderVelocity());
     }
 
     @Override

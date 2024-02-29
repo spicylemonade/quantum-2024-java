@@ -14,6 +14,7 @@ import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalOutput;
 
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -21,24 +22,22 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 /** This is a demo program showing how to use Mecanum control with the MecanumDrive class. */
 public class Robot extends TimedRobot {
-    private enum ArmState{
-      DEFAULT,
-      FEED,
-      SHOOT,
-      SPEAKER
-    }
+
     private boolean DEFAULT= false;
     private boolean FEED= false;
     private boolean SHOOT= false;
     private boolean SPEAKER= false;
+
+    private boolean UP = false;
+    private boolean DOWN = false;
 
     private Joystick joystick;
     private GenericHID controller;
     private double driveSpeed = 0.8;
 
     private CANSparkMax topLeft, bottomLeft, topRight, bottomRight, climberMotor;
-    private CANSparkMax motorIntake, motorShooter,motorArm; 
-    private RelativeEncoder motorArmEncoder; // From REV library
+    private CANSparkMax motorIntake, motorShooter,armMotor; 
+    private RelativeEncoder armMotorEncoder,climberMotorEncoder; // From REV library
     private MecanumDrive mecDrive;
 
     private DigitalOutput sensor1Trig, sensor2Trig;
@@ -66,12 +65,19 @@ public class Robot extends TimedRobot {
     // Additional Talon Motors
     motorIntake = new CANSparkMax(10, MotorType.kBrushless); 
     motorShooter = new CANSparkMax(11, MotorType.kBrushless); 
+    armMotorEncoder = armMotor.getEncoder();
+    climberMotorEncoder = climberMotor.getEncoder();
+    
 
-    motorArmEncoder.setPosition(0);
+    armMotorEncoder.setPosition(0);
+    climberMotorEncoder.setPosition(0);
 
-    motorArm = new CANSparkMax(12, MotorType.kBrushless); 
+    armMotor = new CANSparkMax(12, MotorType.kBrushless); 
 
-    motorArmEncoder = motorArm.getEncoder();
+    DEFAULT = true;
+    DOWN = true;
+
+    
 
     // Ultrasonic Sensors
     sensor1Trig = new DigitalOutput(0);
@@ -90,28 +96,67 @@ public class Robot extends TimedRobot {
 
     // Additional Talon Motors
 
-    if (controller.getRawButton(5)) { // Left Bumper
+    if (controller.getRawButton(5)) { 
         motorIntake.set(0.5); 
     } else {
         motorShooter.set(0);
     }
 
-    if (controller.getRawButton(6)) { // Right Bumper
+    if (controller.getRawButton(6)) { 
         motorShooter.set(0.5); 
     } else {
         motorShooter.set(0);
     }
 
-    // Climber
-    if (controller.getRawButton(4)) { 
-        climberMotor.set(0.8);
-    } else if (controller.getRawButton(2)) {
-        climberMotor.set(-0.8);
-    } else {
-        climberMotor.set(0);
-    }
-    armControllers();
+    //testing
 
+    if (joystick.getRawButton(10)) { 
+        armMotor.set(0.5); 
+    } else {
+        motorShooter.set(0);
+    }
+    if (joystick.getRawButton(11)) { 
+        climberMotor.set(0.5); 
+    } else {
+        motorShooter.set(0);
+    }
+    SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
+    SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
+
+
+    // Climber
+    // climbControllers();
+    // armControllers();
+
+  }
+
+
+  public void climbControllers(){
+    if (joystick.getRawButtonPressed(5)){
+      UP= true;
+      DOWN= false;
+    }
+    if (joystick.getRawButtonPressed(6)){
+      DOWN= true;
+      UP = false;
+    }
+    
+    SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
+  }
+  public void climbPID(){
+    if (UP){
+      climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.UP);
+    }
+    else if (DOWN){
+      climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.DOWN);
+
+    }
+    else{
+      climberMotor.set(0);
+    }
+  }
+  public void climbOrientation(double power, double x, double r){
+    climberMotor.set(power*((r-x)/r));
   }
 
   public void armControllers(){
@@ -131,30 +176,29 @@ public class Robot extends TimedRobot {
       SPEAKER= true;
       FEED=SHOOT=DEFAULT = false;
     }
-    SmartDashboard.putNumber("arm encoder value", motorArmEncoder.getPosition());
+    SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
   }
   public void ArmPID(){
     if (DEFAULT){
-      ArmOrientation(0.7,motorArmEncoder.getPosition() , Constants.ShootConstants.DEFAULT);
-
+      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.DEFAULT);
     }
     else if (FEED){
-      ArmOrientation(0.7,motorArmEncoder.getPosition() , Constants.ShootConstants.FEED);
+      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.FEED);
 
     }
     else if (SHOOT){
-      ArmOrientation(0.7,motorArmEncoder.getPosition() , Constants.ShootConstants.SHOOT);
+      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SHOOT);
 
     }
     else if (SPEAKER){
-      ArmOrientation(0.7,motorArmEncoder.getPosition() , Constants.ShootConstants.SPEAKER);
+      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SPEAKER);
 
     }
     else{
-      motorArm.set(0);
+      armMotor.set(0);
     }
   }
   public void ArmOrientation(double power, double x, double r){
-    motorArm.set(power*((r-x)/r));
+    armMotor.set(power*((r-x)/r));
   }
 }

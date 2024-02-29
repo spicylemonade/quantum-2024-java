@@ -8,6 +8,11 @@ public class Constants {
         public static final double SHOOT= 0.3;
         public static final double SPEAKER= 0.7;
     }
+    public static final class ClimbConstants{
+        public static final double UP= 0.5;
+        public static final double DOWN= 0;
+
+    }
     public static final class DriveTrainConstants{
         public static final double kRamseteB = 2;
         public static final double kRamseteXeta = 0.7;
