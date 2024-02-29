@@ -21,6 +21,7 @@ public class Constants {
         public static final double kWheelRadiusInches = 6;
 
         public static final double kLinearDistanceConversionFactor = (Units.inchesToMeters(1/(kGearRatio*2*Math.PI*Units.inchesToMeters(kWheelRadiusInches))*10));
+        public static Object kDriveKinematics;
 
     }
 }

@@ -10,9 +10,14 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalOutput;
+
+import java.util.function.BooleanSupplier;
 
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 import com.revrobotics.CANSparkMax;
@@ -42,10 +47,16 @@ public class Robot extends TimedRobot {
 
     private DigitalOutput sensor1Trig, sensor2Trig;
     private DigitalInput sensor1Echo, sensor2Echo; 
+    private ConditionalCommand shootConditional;
+    private Command m_autonomousCommand;
+
+    private RobotContainer m_robotContainer;
+
 
   @Override
   public void robotInit() {
     // Joysticks
+
     joystick = new Joystick(0);
     controller = new GenericHID(1);
 
@@ -77,6 +88,8 @@ public class Robot extends TimedRobot {
     DEFAULT = true;
     DOWN = true;
 
+    //shootConditional = new ConditionalCommand(m_autonomousCommand, pickup_shoot, seesRing);
+
     
 
     // Ultrasonic Sensors
@@ -84,10 +97,25 @@ public class Robot extends TimedRobot {
     sensor1Echo = new DigitalInput(1);
     sensor2Trig = new DigitalOutput(2);
     sensor2Echo = new DigitalInput(3);
+    m_robotContainer = new RobotContainer();
   }
 
   @Override
+  public void robotPeriodic(){
+     CommandScheduler.getInstance().run();
+  }
+
+  BooleanSupplier seesRing = () -> {
+  // Code to check if the robot sees a ring
+     return true;
+  };
+  
+
+  @Override
   public void teleopPeriodic() {
+    // if (m_autonomousCommand != null) {
+    //   m_autonomousCommand.cancel();
+    // }
         // Mecanum Drive
     double x = joystick.getX();
     double y = joystick.getY();
@@ -129,6 +157,24 @@ public class Robot extends TimedRobot {
     // armControllers();
 
   }
+
+  @Override
+  public void autonomousInit() {
+    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+
+    // // schedule the autonomous command (example)
+    // if (m_autonomousCommand != null) {
+    //   m_autonomousCommand.schedule();
+    //   //shootConditional.schedule();
+  
+      
+    // }
+  }
+
+  /** This function is called periodically during autonomous. */
+  @Override
+  public void autonomousPeriodic() {}
+
 
 
   public void climbControllers(){

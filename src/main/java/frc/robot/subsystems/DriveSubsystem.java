@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveTrainConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -102,26 +103,26 @@ public class DriveSubsystem  extends SubsystemBase{
 
     public void drive(ChassisSpeeds chassis){
          // Convert chassis speeds to wheel speeds
-    // var wheelSpeeds = DriveConstants.kDriveKinematics.toWheelSpeeds(chassis);
+//     var wheelSpeeds = new DifferentialDriveWheelSpeeds(getLeftEncoderVelocity(),getRightEncoderVelocity());
 
-    // // Calculate feedback voltages
-    // double leftFeedbackVolts = leftPIDController.calculate(leftEncoder.getVelocity(), wheelSpeeds.leftMetersPerSecond);
-    // double rightFeedbackVolts = rightPIDController.calculate(rightEncoder.getVelocity(), wheelSpeeds.rightMetersPerSecond);
+//     // Calculate feedback voltages
+//     double leftFeedbackVolts = leftPIDController.calculate(leftEncoder.getVelocity(), wheelSpeeds.leftMetersPerSecond);
+//     double rightFeedbackVolts = rightPIDController.calculate(rightEncoder.getVelocity(), wheelSpeeds.rightMetersPerSecond);
 
-    // // Calculate feedforward voltages
-    // double leftFeedforwardVolts = DriveConstants.ksVolts +
-    //     DriveConstants.kvVoltSecondsPerMeter * chassis.vxMetersPerSecond +
-    //     DriveConstants.kaVoltSecondsSquaredPerMeter * chassis.axMetersPerSecond2;
-    // double rightFeedforwardVolts = DriveConstants.ksVolts +
-    //     DriveConstants.kvVoltSecondsPerMeter * chassis.vxMetersPerSecond +
-    //     DriveConstants.kaVoltSecondsSquaredPerMeter * chassis.axMetersPerSecond2;
+//     // Calculate feedforward voltages
+//     double leftFeedforwardVolts = DriveConstants.ksVolts +
+//         DriveConstants.kvVoltSecondsPerMeter * chassis.vxMetersPerSecond +
+//         DriveConstants.kaVoltSecondsSquaredPerMeter * chassis.axMetersPerSecond2;
+//     double rightFeedforwardVolts = DriveConstants.ksVolts +
+//         DriveConstants.kvVoltSecondsPerMeter * chassis.vxMetersPerSecond +
+//         DriveConstants.kaVoltSecondsSquaredPerMeter * chassis.axMetersPerSecond2;
 
-    // // Add feedforward and feedback voltages together
-    // double leftVolts = leftFeedforwardVolts + leftFeedbackVolts;
-    // double rightVolts = rightFeedforwardVolts + rightFeedbackVolts;
+//     // Add feedforward and feedback voltages together
+//     double leftVolts = leftFeedforwardVolts + leftFeedbackVolts;
+//     double rightVolts = rightFeedforwardVolts + rightFeedbackVolts;
 
-    // Send voltage commands to motors
-   // difDrive.tankDriveVolts(leftVolts, rightVolts);
+//     Send voltage commands to motors
+//    difDrive.tankDriveVolts(leftVolts, rightVolts);
     }
 
     public double getRightEncoderPosition(){
