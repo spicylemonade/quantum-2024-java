@@ -176,7 +176,7 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {}
 
 
-
+  //FIX CLIMBER ONLY GOES 1 DIRECTION DOWN
   public void climbControllers(){
     if (joystick.getRawButtonPressed(5)){
       UP= true;
