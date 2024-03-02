@@ -52,8 +52,8 @@
         "y": 5.457316369178194
       },
       "prevControl": {
-        "x": 2.868912646916204,
-        "y": 5.252083958713373
+        "x": 2.9062276306370793,
+        "y": 5.625233795922139
       },
       "nextControl": null,
       "isLocked": false,
@@ -73,7 +73,18 @@
     }
   ],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "apriltag",
+      "waypointRelativePos": 3.0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": []
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,

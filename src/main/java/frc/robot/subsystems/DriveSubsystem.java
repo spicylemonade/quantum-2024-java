@@ -43,13 +43,13 @@ public class DriveSubsystem  extends SubsystemBase{
     private RelativeEncoder leftEncoder, rightEncoder; // From REV library
     private DifferentialDriveOdometry odometry;
     private DifferentialDriveWheelPositions wheelPos;
-    private DifferentialDriveKinematics kinematics;
+   
 
 // ... other variables as needed
 
     public DriveSubsystem() {
         navx = new AHRS(SPI.Port.kMXP);
-        kinematics=new DifferentialDriveKinematics(Units.inchesToMeters(27.0));//width of bot
+        
 
         // Motor Initialization (similar to your code) ... 
 
@@ -107,7 +107,7 @@ public class DriveSubsystem  extends SubsystemBase{
     }
 
     public void drive(ChassisSpeeds chassis){
-        DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(chassis);
+        DifferentialDriveWheelSpeeds wheelSpeeds = DriveTrainConstants.kDriveKinematics.toWheelSpeeds(chassis);
         wheelSpeeds.desaturate(0.5);
 
         difDrive.tankDrive(wheelSpeeds.leftMetersPerSecond, -wheelSpeeds.rightMetersPerSecond);
