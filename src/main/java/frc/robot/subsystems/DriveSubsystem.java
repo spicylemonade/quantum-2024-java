@@ -13,6 +13,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.proto.Kinematics;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -40,11 +43,13 @@ public class DriveSubsystem  extends SubsystemBase{
     private RelativeEncoder leftEncoder, rightEncoder; // From REV library
     private DifferentialDriveOdometry odometry;
     private DifferentialDriveWheelPositions wheelPos;
+    private DifferentialDriveKinematics kinematics;
 
 // ... other variables as needed
 
     public DriveSubsystem() {
         navx = new AHRS(SPI.Port.kMXP);
+        kinematics=new DifferentialDriveKinematics(Units.inchesToMeters(27.0));//width of bot
 
         // Motor Initialization (similar to your code) ... 
 
@@ -102,6 +107,10 @@ public class DriveSubsystem  extends SubsystemBase{
     }
 
     public void drive(ChassisSpeeds chassis){
+        DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(chassis);
+        wheelSpeeds.desaturate(0.5);
+
+        difDrive.tankDrive(wheelSpeeds.leftMetersPerSecond, -wheelSpeeds.rightMetersPerSecond);
          // Convert chassis speeds to wheel speeds
 //     var wheelSpeeds = new DifferentialDriveWheelSpeeds(getLeftEncoderVelocity(),getRightEncoderVelocity());
 

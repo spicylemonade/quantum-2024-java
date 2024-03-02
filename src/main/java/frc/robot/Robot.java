@@ -83,7 +83,7 @@ public class Robot extends TimedRobot {
     armMotorEncoder.setPosition(0);
     climberMotorEncoder.setPosition(0);
 
-    armMotor = new CANSparkMax(12, MotorType.kBrushless); 
+    armMotor = new CANSparkMax(5, MotorType.kBrushless); 
 
     DEFAULT = true;
     DOWN = true;
@@ -127,7 +127,7 @@ public class Robot extends TimedRobot {
     if (controller.getRawButton(5)) { 
         motorIntake.set(0.5); 
     } else {
-        motorShooter.set(0);
+        motorIntake.set(0);
     }
 
     if (controller.getRawButton(6)) { 
@@ -138,15 +138,15 @@ public class Robot extends TimedRobot {
 
     //testing
 
-    if (joystick.getRawButton(10)) { 
-        armMotor.set(0.5); 
+    if (joystick.getRawButton(1)) { 
+        armMotor.set(0.2); 
     } else {
-        motorShooter.set(0);
+        armMotor.set(0);
     }
     if (joystick.getRawButton(11)) { 
         climberMotor.set(0.5); 
     } else {
-        motorShooter.set(0);
+        climberMotor.set(0);
     }
     SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
     SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
