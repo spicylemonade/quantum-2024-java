@@ -75,7 +75,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "apriltag",
+      "name": "shootPoint",
       "waypointRelativePos": 3.0,
       "command": {
         "type": "parallel",
