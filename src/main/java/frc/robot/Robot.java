@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
     private double driveSpeed = 0.8;
 
     private CANSparkMax topLeft, bottomLeft, topRight, bottomRight, climberMotor;
-    private CANSparkMax motorIntake, motorShooter,armMotor; 
+    private CANSparkMax motorIntake, motorShooterUp,motorShooterDown,armMotor; 
     private RelativeEncoder armMotorEncoder,climberMotorEncoder; // From REV library
     private MecanumDrive mecDrive;
 
@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
     bottomLeft = new CANSparkMax(2, MotorType.kBrushless);
     topRight = new CANSparkMax(4, MotorType.kBrushless);
     bottomRight = new CANSparkMax(3, MotorType.kBrushless);
-    climberMotor = new CANSparkMax(8, MotorType.kBrushless);
+    climberMotor = new CANSparkMax(10, MotorType.kBrushless);
 
     mecDrive = new MecanumDrive(topLeft, bottomLeft, topRight, bottomRight);
 
@@ -74,16 +74,21 @@ public class Robot extends TimedRobot {
     bottomRight.setInverted(true);
 
     // Additional Talon Motors
-    motorIntake = new CANSparkMax(10, MotorType.kBrushless); 
-    motorShooter = new CANSparkMax(11, MotorType.kBrushless); 
+    motorIntake = new CANSparkMax(9, MotorType.kBrushless);
+     
+    motorShooterUp = new CANSparkMax(7, MotorType.kBrushless);
+    motorShooterDown = new CANSparkMax(8, MotorType.kBrushless);  
     armMotorEncoder = armMotor.getEncoder();
     climberMotorEncoder = climberMotor.getEncoder();
+
+    armMotor = new CANSparkMax(6, MotorType.kBrushless); 
+    //armMotor = new CANSparkMax(5, MotorType.kBrushless); other arm left
     
 
     armMotorEncoder.setPosition(0);
     climberMotorEncoder.setPosition(0);
 
-    armMotor = new CANSparkMax(5, MotorType.kBrushless); 
+
 
     DEFAULT = true;
     DOWN = true;
@@ -100,10 +105,10 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
   }
 
-  @Override
-  public void robotPeriodic(){
-     CommandScheduler.getInstance().run();
-  }
+  //@Override
+  //public void robotPeriodic(){
+    // CommandScheduler.getInstance().run();
+  //}
 
   BooleanSupplier seesRing = () -> {
   // Code to check if the robot sees a ring
@@ -124,26 +129,29 @@ public class Robot extends TimedRobot {
 
     // Additional Talon Motors
 
-    if (controller.getRawButton(5)) { 
+    if (joystick.getRawButton(5)) { 
         motorIntake.set(0.5); 
     } else {
         motorIntake.set(0);
     }
 
-    if (controller.getRawButton(6)) { 
-        motorShooter.set(0.5); 
+    if (joystick.getRawButton(1)) { 
+        motorShooterUp.set(0.5); 
+        motorShooterDown.set(0.5); 
+        
     } else {
-        motorShooter.set(0);
+        motorShooterUp.set(0);
+        motorShooterDown.set(0);
     }
 
     //testing
 
-    if (joystick.getRawButton(1)) { 
+    if (joystick.getRawButton(6)) { 
         armMotor.set(0.2); 
     } else {
         armMotor.set(0);
     }
-    if (joystick.getRawButton(11)) { 
+    if (joystick.getRawButton(4)) { 
         climberMotor.set(0.5); 
     } else {
         climberMotor.set(0);
