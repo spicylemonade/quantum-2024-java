@@ -28,29 +28,29 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 /** This is a demo program showing how to use Mecanum control with the MecanumDrive class. */
 public class Robot extends TimedRobot {
 
-    private boolean DEFAULT= false;
-    private boolean FEED= false;
-    private boolean SHOOT= false;
-    private boolean SPEAKER= false;
+    // private boolean DEFAULT= false;
+    // private boolean FEED= false;
+    // private boolean SHOOT= false;
+    // private boolean SPEAKER= false;
 
-    private boolean UP = false;
-    private boolean DOWN = false;
+    // private boolean UP = false;
+    // private boolean DOWN = false;
 
     private Joystick joystick;
-    private GenericHID controller;
+    // private GenericHID controller;
     private double driveSpeed = 0.8;
 
     private CANSparkMax topLeft, bottomLeft, topRight, bottomRight, climberMotor;
-    private CANSparkMax motorIntake, motorShooterUp,motorShooterDown,armMotor; 
-    private RelativeEncoder armMotorEncoder,climberMotorEncoder; // From REV library
+    private CANSparkMax motorIntake, motorShooterUp,motorShooterDown,armMotor, armMotor2; 
+    //private RelativeEncoder armMotorEncoder,climberMotorEncoder; // From REV library
     private MecanumDrive mecDrive;
 
-    private DigitalOutput sensor1Trig, sensor2Trig;
-    private DigitalInput sensor1Echo, sensor2Echo; 
-    private ConditionalCommand shootConditional;
-    private Command m_autonomousCommand;
+    // private DigitalOutput sensor1Trig, sensor2Trig;
+    // private DigitalInput sensor1Echo, sensor2Echo; 
+    // private ConditionalCommand shootConditional;
+    // private Command m_autonomousCommand;
 
-    private RobotContainer m_robotContainer;
+    //private RobotContainer m_robotContainer;
 
 
   @Override
@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
     // Joysticks
 
     joystick = new Joystick(0);
-    controller = new GenericHID(1);
+    //controller = new GenericHID(1);
 
     //  Mecanum Drive Motors
     topLeft = new CANSparkMax(1, MotorType.kBrushless);
@@ -70,39 +70,39 @@ public class Robot extends TimedRobot {
     mecDrive = new MecanumDrive(topLeft, bottomLeft, topRight, bottomRight);
 
     // Invert motors if needed
-    topRight.setInverted(true);
+    topRight.setInverted(false);
     bottomRight.setInverted(true);
+    bottomLeft.setInverted(true);
 
     // Additional Talon Motors
     motorIntake = new CANSparkMax(9, MotorType.kBrushless);
      
     motorShooterUp = new CANSparkMax(7, MotorType.kBrushless);
     motorShooterDown = new CANSparkMax(8, MotorType.kBrushless);  
-    armMotorEncoder = armMotor.getEncoder();
-    climberMotorEncoder = climberMotor.getEncoder();
+    // armMotorEncoder = armMotor.getEncoder();
+    // climberMotorEncoder = climberMotor.getEncoder();
 
     armMotor = new CANSparkMax(6, MotorType.kBrushless); 
-    //armMotor = new CANSparkMax(5, MotorType.kBrushless); other arm left
+    armMotor2 = new CANSparkMax(5, MotorType.kBrushless); 
     
 
-    armMotorEncoder.setPosition(0);
-    climberMotorEncoder.setPosition(0);
+    // armMotorEncoder.setPosition(0);
+    // climberMotorEncoder.setPosition(0);
 
 
 
-    DEFAULT = true;
-    DOWN = true;
+    // DEFAULT = true;
+    // DOWN = true;
 
-    //shootConditional = new ConditionalCommand(m_autonomousCommand, pickup_shoot, seesRing);
 
     
 
-    // Ultrasonic Sensors
-    sensor1Trig = new DigitalOutput(0);
-    sensor1Echo = new DigitalInput(1);
-    sensor2Trig = new DigitalOutput(2);
-    sensor2Echo = new DigitalInput(3);
-    m_robotContainer = new RobotContainer();
+    // // Ultrasonic Sensors
+    // sensor1Trig = new DigitalOutput(0);
+    // sensor1Echo = new DigitalInput(1);
+    // sensor2Trig = new DigitalOutput(2);
+    // sensor2Echo = new DigitalInput(3);
+    //m_robotContainer = new RobotContainer();
   }
 
   //@Override
@@ -125,22 +125,37 @@ public class Robot extends TimedRobot {
     double x = joystick.getX();
     double y = joystick.getY();
     double rotation = joystick.getZ();
+    if (Math.abs(y) < 0.3){
+      y = 0;
+    }
+    if (Math.abs(x) < 0.3){
+      x = 0;
+    }
+    if (Math.abs(rotation) < 0.3){
+      rotation = 0;
+    }
     mecDrive.driveCartesian(y * driveSpeed, x * driveSpeed, rotation * driveSpeed);
 
     // Additional Talon Motors
 
     if (joystick.getRawButton(5)) { 
         motorIntake.set(0.5); 
+    } else if (joystick.getRawButton(3)) { 
+        motorIntake.set(-0.5); 
     } else {
         motorIntake.set(0);
     }
+
 
     if (joystick.getRawButton(1)) { 
         motorShooterUp.set(0.5); 
         motorShooterDown.set(0.5); 
         
-    } else {
-        motorShooterUp.set(0);
+    } else if(joystick.getRawButton(8)) {
+         motorShooterUp.set(-0.2); 
+        motorShooterDown.set(-0.2); 
+    }else{
+      motorShooterUp.set(0);
         motorShooterDown.set(0);
     }
 
@@ -148,16 +163,28 @@ public class Robot extends TimedRobot {
 
     if (joystick.getRawButton(6)) { 
         armMotor.set(0.2); 
+        armMotor2.set(0.2);
+
     } else {
         armMotor.set(0);
+        armMotor2.set(0);
     }
+
     if (joystick.getRawButton(4)) { 
+        armMotor.set(-0.2); 
+        armMotor2.set(-0.2);
+
+    } else {
+        armMotor.set(0);
+        armMotor2.set(0);
+    }
+    if (joystick.getRawButton(2)) { 
         climberMotor.set(0.5); 
     } else {
         climberMotor.set(0);
     }
-    SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
-    SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
+    //SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
+    //SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
 
 
     // Climber
@@ -184,75 +211,75 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {}
 
 
-  //FIX CLIMBER ONLY GOES 1 DIRECTION DOWN
-  public void climbControllers(){
-    if (joystick.getRawButtonPressed(5)){
-      UP= true;
-      DOWN= false;
-    }
-    if (joystick.getRawButtonPressed(6)){
-      DOWN= true;
-      UP = false;
-    }
+  // //FIX CLIMBER ONLY GOES 1 DIRECTION DOWN
+  // public void climbControllers(){
+  //   if (joystick.getRawButtonPressed(5)){
+  //     UP= true;
+  //     DOWN= false;
+  //   }
+  //   if (joystick.getRawButtonPressed(6)){
+  //     DOWN= true;
+  //     UP = false;
+  //   }
     
-    SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
-  }
-  public void climbPID(){
-    if (UP){
-      climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.UP);
-    }
-    else if (DOWN){
-      climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.DOWN);
+  //   SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
+  // }
+  // public void climbPID(){
+  //   if (UP){
+  //     climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.UP);
+  //   }
+  //   else if (DOWN){
+  //     climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.DOWN);
 
-    }
-    else{
-      climberMotor.set(0);
-    }
-  }
-  public void climbOrientation(double power, double x, double r){
-    climberMotor.set(power*((r-x)/r));
-  }
+  //   }
+  //   else{
+  //     climberMotor.set(0);
+  //   }
+  // }
+  // public void climbOrientation(double power, double x, double r){
+  //   climberMotor.set(power*((r-x)/r));
+  // }
 
-  public void armControllers(){
-    if (joystick.getRawButtonPressed(1)){
-      DEFAULT= true;
-      FEED=SHOOT=SPEAKER = false;
-    }
-    if (joystick.getRawButtonPressed(2)){
-      FEED= true;
-      DEFAULT=SHOOT=SPEAKER = false;
-    }
-    if (joystick.getRawButtonPressed(3)){
-      SHOOT= true;
-      FEED=DEFAULT=SPEAKER = false;
-    }
-    if (joystick.getRawButtonPressed(4)){
-      SPEAKER= true;
-      FEED=SHOOT=DEFAULT = false;
-    }
-    SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
-  }
-  public void ArmPID(){
-    if (DEFAULT){
-      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.DEFAULT);
-    }
-    else if (FEED){
-      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.FEED);
+  // public void armControllers(){
+  //   if (joystick.getRawButtonPressed(1)){
+  //     DEFAULT= true;
+  //     FEED=SHOOT=SPEAKER = false;
+  //   }
+  //   if (joystick.getRawButtonPressed(2)){
+  //     FEED= true;
+  //     DEFAULT=SHOOT=SPEAKER = false;
+  //   }
+  //   if (joystick.getRawButtonPressed(3)){
+  //     SHOOT= true;
+  //     FEED=DEFAULT=SPEAKER = false;
+  //   }
+  //   if (joystick.getRawButtonPressed(4)){
+  //     SPEAKER= true;
+  //     FEED=SHOOT=DEFAULT = false;
+  //   }
+  //   SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
+  // }
+  // public void ArmPID(){
+  //   if (DEFAULT){
+  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.DEFAULT);
+  //   }
+  //   else if (FEED){
+  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.FEED);
 
-    }
-    else if (SHOOT){
-      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SHOOT);
+  //   }
+  //   else if (SHOOT){
+  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SHOOT);
 
-    }
-    else if (SPEAKER){
-      ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SPEAKER);
+  //   }
+  //   else if (SPEAKER){
+  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SPEAKER);
 
-    }
-    else{
-      armMotor.set(0);
-    }
-  }
-  public void ArmOrientation(double power, double x, double r){
-    armMotor.set(power*((r-x)/r));
-  }
+  //   }
+  //   else{
+  //     armMotor.set(0);
+  //   }
+  // }
+  // public void ArmOrientation(double power, double x, double r){
+  //   armMotor.set(power*((r-x)/r));
+  // }
 }

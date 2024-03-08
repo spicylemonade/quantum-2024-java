@@ -21,9 +21,16 @@ public class RobotContainer {
         //configureButtonBindings();
 
     }
-    public Command getAutonomousCommand() {
+    public Command getShootCommand() {
         // Load the path you want to follow using its name in GUIthe 
         PathPlannerPath path = PathPlannerPath.fromPathFile("shoot");
+
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return AutoBuilder.followPath(path);
+    }
+    public Command getPickupCommand() {
+        // Load the path you want to follow using its name in GUIthe 
+        PathPlannerPath path = PathPlannerPath.fromPathFile("pickup");
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return AutoBuilder.followPath(path);
