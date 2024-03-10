@@ -5,7 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
@@ -14,12 +16,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalOutput;
 
 import java.util.function.BooleanSupplier;
 
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -36,7 +40,13 @@ public class Robot extends TimedRobot {
     // private boolean UP = false;
     // private boolean DOWN = false;
 
+    private double ultrasonicDistance;
+    private boolean isRingCentered;
+    private int state;
+
+
     private Joystick joystick;
+    private AHRS navx;
     // private GenericHID controller;
     private double driveSpeed = 0.8;
 
@@ -49,6 +59,7 @@ public class Robot extends TimedRobot {
     // private DigitalInput sensor1Echo, sensor2Echo; 
     // private ConditionalCommand shootConditional;
     // private Command m_autonomousCommand;
+    private AnalogInput ultrasonicSensor;
 
     //private RobotContainer m_robotContainer;
 
@@ -56,6 +67,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Joysticks
+    navx = new AHRS(Port.kUSB1);
+    
 
     joystick = new Joystick(0);
     //controller = new GenericHID(1);
@@ -195,91 +208,95 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // // schedule the autonomous command (example)
-    // if (m_autonomousCommand != null) {
-    //   m_autonomousCommand.schedule();
-    //   //shootConditional.schedule();
-  
-      
-    // }
+    ultrasonicSensor = new AnalogInput(1);
+    state = 1;
   }
 
   /** This function is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {}
+   public void autonomousPeriodic() {
+        double ultrasonicDistance = ultrasonicSensor.getVoltage() / (5.0 / 512.0);
 
+        switch (state) {
+            case 1:
+                // Turn 5 degrees, shoot, then turn back 5 degrees
+                navx.reset();
+                mecDrive.driveCartesian(0.0, 0.0, 0.2); // Rotate clockwise
+                while (navx.getAngle() < 5.0) {
+                    // Wait until rotation is complete
+                }
+                mecDrive.stopMotor();
+                /* Shoot */
 
-  // //FIX CLIMBER ONLY GOES 1 DIRECTION DOWN
-  // public void climbControllers(){
-  //   if (joystick.getRawButtonPressed(5)){
-  //     UP= true;
-  //     DOWN= false;
-  //   }
-  //   if (joystick.getRawButtonPressed(6)){
-  //     DOWN= true;
-  //     UP = false;
-  //   }
-    
-  //   SmartDashboard.putNumber("climber encoder value", armMotorEncoder.getPosition());
-  // }
-  // public void climbPID(){
-  //   if (UP){
-  //     climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.UP);
-  //   }
-  //   else if (DOWN){
-  //     climbOrientation(0.7,climberMotorEncoder.getPosition() , Constants.ClimbConstants.DOWN);
+                navx.reset();
+                mecDrive.driveCartesian(0.0, 0.0, -0.2); // Rotate counter-clockwise
+                while (navx.getAngle() > -5.0) {
+                    // Wait until rotation is complete
+                }
+                mecDrive.stopMotor();
+                state = 2;
+                break;
 
-  //   }
-  //   else{
-  //     climberMotor.set(0);
-  //   }
-  // }
-  // public void climbOrientation(double power, double x, double r){
-  //   climberMotor.set(power*((r-x)/r));
-  // }
+            case 2:
+                // Move forward until ultrasonic sensor detects something 1 cm away, then turn and shoot
+                mecDrive.driveCartesian(0.5, 0.0, 0.0); // Move forward
+                if (ultrasonicDistance < 1.0) {
+                    mecDrive.stopMotor();
+                    navx.reset();
+                    mecDrive.driveCartesian(0.0, 0.0, 0.2); // Rotate clockwise
+                    while (navx.getAngle() < 180.0) {
+                        // Wait until rotation is complete
+                    }
+                    mecDrive.stopMotor();
+                    /* Shoot */
+                    state = 3;
+                }
+                break;
 
-  // public void armControllers(){
-  //   if (joystick.getRawButtonPressed(1)){
-  //     DEFAULT= true;
-  //     FEED=SHOOT=SPEAKER = false;
-  //   }
-  //   if (joystick.getRawButtonPressed(2)){
-  //     FEED= true;
-  //     DEFAULT=SHOOT=SPEAKER = false;
-  //   }
-  //   if (joystick.getRawButtonPressed(3)){
-  //     SHOOT= true;
-  //     FEED=DEFAULT=SPEAKER = false;
-  //   }
-  //   if (joystick.getRawButtonPressed(4)){
-  //     SPEAKER= true;
-  //     FEED=SHOOT=DEFAULT = false;
-  //   }
-  //   SmartDashboard.putNumber("arm encoder value", armMotorEncoder.getPosition());
-  // }
-  // public void ArmPID(){
-  //   if (DEFAULT){
-  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.DEFAULT);
-  //   }
-  //   else if (FEED){
-  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.FEED);
+            case 3:
+                // Rotate 90 degrees, move forward until ultrasonic sensor detects something 1 cm away, then turn and shoot
+                navx.reset();
+                mecDrive.driveCartesian(0.0, 0.0, 0.2); // Rotate clockwise
+                while (navx.getAngle() < 90.0) {
+                    // Wait until rotation is complete
+                }
+                mecDrive.stopMotor();
 
-  //   }
-  //   else if (SHOOT){
-  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SHOOT);
+                mecDrive.driveCartesian(0.5, 0.0, 0.0); // Move forward
+                if (ultrasonicDistance < 1.0) {
+                    mecDrive.stopMotor();
+                    navx.reset();
+                    mecDrive.driveCartesian(0.0, 0.0, 0.2); // Rotate clockwise
+                    while (navx.getAngle() < 180.0) {
+                        // Wait until rotation is complete
+                    }
+                    mecDrive.stopMotor();
+                    /* Shoot */
+                    state = 4;
+                }
+                break;
 
-  //   }
-  //   else if (SPEAKER){
-  //     ArmOrientation(0.7,armMotorEncoder.getPosition() , Constants.ShootConstants.SPEAKER);
+            case 4:
+                // Rotate 40 degrees, move forward until ultrasonic sensor detects something 1 cm away, then turn and shoot
+                navx.reset();
+                mecDrive.driveCartesian(0.0, 0.0, 0.2); // Rotate clockwise
+                while (navx.getAngle() < 40.0) {
+                    // Wait until rotation is complete
+                }
+                mecDrive.stopMotor();
 
-  //   }
-  //   else{
-  //     armMotor.set(0);
-  //   }
-  // }
-  // public void ArmOrientation(double power, double x, double r){
-  //   armMotor.set(power*((r-x)/r));
-  // }
+                mecDrive.driveCartesian(0.5, 0.0, 0.0); // Move forward
+                if (ultrasonicDistance < 1.0) {
+                    mecDrive.stopMotor();
+                    navx.reset();
+                    mecDrive.driveCartesian(0.0, 0.0, 0.2); // Rotate clockwise
+                    while (navx.getAngle() < 180.0) {
+                        // Wait until rotation is complete
+                    }
+                    mecDrive.stopMotor();
+                    /* Shoot */
+                }
+                break;
+        }
+    }
 }
