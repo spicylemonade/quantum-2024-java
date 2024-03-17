@@ -172,18 +172,13 @@ public class Robot extends TimedRobot {
         motorShooterDown.set(0);
     }
 
-    //testing
+    //Arm Climber
 
     if (joystick.getRawButton(6)) { 
         armMotor.set(0.2); 
         armMotor2.set(0.2);
 
-    } else {
-        armMotor.set(0);
-        armMotor2.set(0);
-    }
-
-    if (joystick.getRawButton(4)) { 
+    } else if (joystick.getRawButton(4)) { 
         armMotor.set(-0.2); 
         armMotor2.set(-0.2);
 
@@ -191,6 +186,9 @@ public class Robot extends TimedRobot {
         armMotor.set(0);
         armMotor2.set(0);
     }
+
+    //testing
+
     if (joystick.getRawButton(2)) { 
         climberMotor.set(0.5); 
     } else {
